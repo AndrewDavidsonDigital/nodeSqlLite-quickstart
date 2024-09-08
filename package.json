@@ -1,0 +1,19 @@
+{
+  "name": "node-sqllite-quickstart",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "boot": "yarn tsc && node ./out/main.js",
+    "compile": "tsc",
+    "runner": "node ./out/main.js"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.4",
+    "@types/sqlite3": "^3.1.11",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
