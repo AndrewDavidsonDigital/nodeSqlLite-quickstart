@@ -1,5 +1,5 @@
 import { sqlite3 } from 'sqlite3';
-import { IUserRow, state } from './db.interfaces';
+import { IUserRow, IVolatileRow, state } from './db.interfaces';
 import { IQueryParams } from '../interfaces';
 // DB Init
 const sqlite3Instance = require('sqlite3') as sqlite3;
@@ -18,11 +18,17 @@ export function dbConnection() {
      */
     'getUsers'      : async () => await getUsers(),
     /**
-     * @description return all users within the connected database
+     * @description write the query params into the volatiles db
      * @throws if access to the database has not be defined yet.
-     * @returns Array<IUserRow> representation of the user, void and throws otherwise
+     * @returns void
      */
     'addVolatile'   : async (data: IQueryParams[]) => await addVolatile(data),
+    /**
+     * @description return a single volatile data-point if it exists
+     * @param id for the data-point to access 
+     * @throws if access to the database has not be defined yet.
+     * @returns IVolatileRow representation of the data-point, void and throws otherwise
+     */
     'getVolatile'   : async (data: number) => await getVolatile(data),
   }
 }
@@ -66,6 +72,11 @@ function getUsers(): Promise<void | IUserRow[]>{
 }
 
 
+/**
+ * @description write the query params into the volatiles db
+ * @throws if access to the database has not be defined yet.
+ * @returns void
+ */
 function addVolatile(data: IQueryParams[]): Promise<void>{
   return new Promise((resolve, reject) => {
     if (!(state.initd) || state.connection === null){
@@ -86,7 +97,13 @@ function addVolatile(data: IQueryParams[]): Promise<void>{
   });
 }
 
-function getVolatile(id: number): Promise<void | IUserRow>{
+/**
+ * @description return a single volatile data-point if it exists
+ * @param id for the data-point to access 
+ * @throws if access to the database has not be defined yet.
+ * @returns IVolatileRow representation of the data-point, void and throws otherwise
+ */
+function getVolatile(id: number): Promise<void | IVolatileRow>{
   return new Promise((resolve, reject) => {
     if (!(state.initd) || state.connection === null){
       reject('Database connection not yet initialized');
@@ -95,7 +112,7 @@ function getVolatile(id: number): Promise<void | IUserRow>{
     state.connection.all(
       "SELECT * FROM volatiles where id=$id", {
         $id: id,
-      }, (error, rows: IUserRow[]) => {
+      }, (error, rows: IVolatileRow[]) => {
         if (error){
           reject('Database connection not yet initialized');
         }

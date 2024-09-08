@@ -7,6 +7,11 @@ export interface IUserRow {
   age?: number;
 }
 
+export interface IVolatileRow {
+  id: number;
+  data: string;
+}
+
 export interface IConnectionInstance {
   initd: boolean;
   connection: null | Database;
