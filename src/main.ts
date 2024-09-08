@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { dbConnection } from './lib/db';
+import { exit } from 'node:process';
 
 // server Init
 const app = express();
@@ -58,3 +59,16 @@ app.post('/more', (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
+// 10mins in ms
+const EXPECTED_LIFETIME = 600000;
+
+// add shut down timer so we don't live forever.
+console.log(`Auto Shutdown in: '${EXPECTED_LIFETIME / 1000 / 60}minutes'`);
+setTimeout(
+  () => {
+    console.log(`Shutting down server due over extended lifetime: '${EXPECTED_LIFETIME}ms'`);
+    exit(1);
+  }, 
+  EXPECTED_LIFETIME,
+);
