@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "boot": "yarn tsc && node ./out/main.js",
+    "boot": "yarn compile && yarn test run && node ./out/main.js",
+    "coverage": "vitest run --coverage",
     "compile": "tsc",
-    "runner": "node ./out/main.js"
+    "runner": "node ./out/main.js",
+    "test": "vitest"
   },
   "dependencies": {
     "@types/express": "^4.17.21",
@@ -15,5 +17,9 @@
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.1",
+    "vitest": "^2.1.1"
   }
 }
