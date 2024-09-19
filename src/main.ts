@@ -1,105 +1,48 @@
-import express, { Request, Response } from 'express';
-import { dbConnection } from './lib/db';
-import { exit } from 'node:process';
-import { IQueryParams } from './interfaces';
+import { 
+  FLAG_IS_SERVER, 
+  KEYS_FLAGS, 
+  VALID_KEYS,
+} from "./args";
+import { bootServer } from "./server";
 
-// server Init
-const app = express();
-const port = process.env.PORT || 6875;
 
-app.use(express.json());
+const localArgs = [...process.argv];
+const runningArgs = new Map<string, string| boolean>();
 
-const db = dbConnection();
-db.init();
+validateArgs(localArgs);
 
-// BASE Route - redirect to listing of users
-app.get('/', (req: Request, res: Response) => {
-  console.log('hit: `/`');
-  res.redirect('/list');
-});
+console.log(runningArgs);
 
-// list out all users
-app.get('/list', async (req: Request, res: Response) => {
-  console.log('hit: `/list`');
-  try{  
-    const data = await db.getUsers();
-    if (data){
-      return res.json(data);      
+if (runningArgs.get(FLAG_IS_SERVER)){
+  bootServer();
+}
+
+function validateArgs(argv: string[]) {
+
+  for (let i=0; i < argv.length; i++){
+    const arg = argv[i];
+    console.log(`Arg: [${arg}]`);
+
+    // check validity:
+    if (VALID_KEYS.indexOf(arg) === -1){
+      console.log(`\t unknown, skipping`);
+      continue;
     }
-  } catch(e){
-    console.trace('internal issue returning 500: \n', e);
-    return res.sendStatus(500);
-  }
 
-  console.trace('Reached expected unreachable code, returning 500');
-  return res.sendStatus(500);
-});
-
-
-// Example Dynamic Route
-app.get('/thing/:id', (req: Request, res: Response) => {
-  console.log('hit: `/thing/:id`');
-  const id = Number(req.params.id || 0);
-
-  if ((id % 3) !== 0 ){
-    return res.status(418).send("Don't like left over thirds");
-  }
-  
-  res.status(200).send("A clean plate is good mate");
-});
-
-// Example Dynamic Route
-app.get('/volatile/:id', async (req: Request, res: Response) => {
-  console.log('hit: `/volatile/:id`');
-  const id = Number(req.params.id || 0);
-  try{
-    const data = await db.getVolatile(id);
-    if (data){
-      return res.json(data);      
+    // is this a flag
+    // else its an input
+    if (KEYS_FLAGS.indexOf(arg) !== -1){
+      runningArgs.set(arg, true);
     } else {
-      return res.sendStatus(400);
-    }
-  } catch(e){
-    console.trace('internal issue returning 500: \n', e);
-    return res.sendStatus(500);
-  }
-});
-
-// Example post adding db data
-app.post('/more', async (req: Request, res: Response) => {
-  console.log('hit: `/more`');
-  try{
-    console.log(req.query);
-    const jsonParams: IQueryParams[] = []
-    Object.keys(req.query).forEach(key => {
-      const newObj = {
-        key: key,
-        value: (req.query[key] as string),
+      const nextArg = argv[i + 1];
+      if (nextArg.startsWith('-')){
+        console.log(`\t invalid input format, input value can't start with a hyphen '-'`);
+        continue;
       }
-      jsonParams.push(newObj);
-    });
-    await db.addVolatile(jsonParams);
-    return res.sendStatus(200);
-  } catch(e){
-    console.trace('internal issue returning 500: \n', e);
-    return res.sendStatus(500);
+
+      // skip flag checking for next
+      i++;
+      runningArgs.set(arg, nextArg);
+    }
   }
-});
-
-// Console report that we are up and alive
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
-
-// 10mins in ms
-const EXPECTED_LIFETIME = 600000;
-
-// add shut down timer so we don't live forever.
-console.log(`Auto Shutdown in: '${EXPECTED_LIFETIME / 1000 / 60}minutes'`);
-setTimeout(
-  () => {
-    console.log(`Shutting down server due over extended lifetime: '${EXPECTED_LIFETIME}ms'`);
-    exit(1);
-  }, 
-  EXPECTED_LIFETIME,
-);
+}

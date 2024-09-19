@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "boot": "yarn compile && yarn test run && node ./out/main.js",
+    "boot": "yarn compile && yarn test run && node ./out/main.js -s -f foo.js",
     "coverage": "vitest run --coverage",
     "compile": "tsc",
-    "runner": "node ./out/main.js",
+    "runner": "node ./out/server.js",
     "test": "vitest"
   },
   "dependencies": {
