@@ -24,14 +24,14 @@ function validateArgs(argv: string[]) {
     console.log(`Arg: [${arg}]`);
 
     // check validity:
-    if (VALID_KEYS.indexOf(arg) === -1){
+    if (!(VALID_KEYS.has(arg))){
       console.log(`\t unknown, skipping`);
       continue;
     }
 
     // is this a flag
     // else its an input
-    if (KEYS_FLAGS.indexOf(arg) !== -1){
+    if (KEYS_FLAGS.has(arg)){
       runningArgs.set(arg, true);
     } else {
       const nextArg = argv[i + 1];
